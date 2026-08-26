@@ -1,0 +1,2088 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Guerra Zombie</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #111;
+}
+
+canvas {
+    display: block;
+}
+
+#mensaje {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+}
+
+#vida {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+}
+
+#municion {
+    position: fixed;
+    top: 55px;
+    right: 20px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+}
+
+#puntuacion {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+}
+
+#oleada {
+    position: fixed;
+    top: 125px;
+    right: 20px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+}
+
+#arma {
+    position: fixed;
+    bottom: 60px;
+    right: 25px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+}
+
+#proteccion {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 17px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+}
+
+#instrucciones {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    z-index: 10;
+    text-align: center;
+    text-shadow: 2px 2px 4px black;
+}
+
+#puntoMira {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    margin-top: -4px;
+    border: 2px solid white;
+    border-radius: 50%;
+    z-index: 20;
+    pointer-events: none;
+}
+
+#mensajeDisparo {
+    position: fixed;
+    left: 50%;
+    top: 55%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 22px;
+    font-weight: bold;
+    z-index: 30;
+    pointer-events: none;
+    text-shadow: 2px 2px 4px black;
+    opacity: 0;
+}
+
+#recargando {
+    position: fixed;
+    left: 50%;
+    top: 60%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 30;
+    pointer-events: none;
+    text-shadow: 2px 2px 4px black;
+    display: none;
+}
+
+#tienda {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.82);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+#tiendaCaja {
+    width: 430px;
+    max-width: 90%;
+    background: #222;
+    border: 2px solid #777;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 0 30px black;
+}
+
+#tiendaCaja h1 {
+    margin-top: 0;
+}
+
+.producto {
+    background: #333;
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.producto button,
+#continuar {
+    margin-top: 8px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#continuar {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: #555;
+    color: white;
+}
+
+.botonComprado {
+    opacity: 0.5;
+}
+</style>
+</head>
+
+<body>
+
+<div id="mensaje">
+    🧟 GUERRA ZOMBIE<br>
+    <span style="font-size:14px;">
+        Sobrevive a las oleadas
+    </span>
+</div>
+
+<div id="vida">
+    ❤️ Vida: <span id="numeroVida">100</span>
+</div>
+
+<div id="municion">
+    🔫 Munición: <span id="numeroMunicion">12</span> / 12
+</div>
+
+<div id="puntuacion">
+    🏆 Puntos: <span id="numeroPuntuacion">0</span>
+</div>
+
+<div id="oleada">
+    🌊 Oleada: <span id="numeroOleada">1</span>
+</div>
+
+<div id="arma">
+    🔫 <span id="nombreArma">Pistola</span>
+</div>
+
+<div id="proteccion">
+    🛡️ Protección: <span id="numeroProteccion">0</span>%
+</div>
+
+<div id="instrucciones">
+    CLIC = jugar/disparar | WASD = moverse | MOUSE = mirar | R = recargar
+</div>
+
+<div id="puntoMira"></div>
+
+<div id="mensajeDisparo"></div>
+
+<div id="recargando">
+    🔄 RECARGANDO...
+</div>
+
+
+<!-- ========================================
+     TIENDA
+======================================== -->
+
+<div id="tienda">
+
+    <div id="tiendaCaja">
+
+        <h1>🏪 TIENDA</h1>
+
+        <p>
+            💰 Puntos:
+            <span id="puntosTienda">0</span>
+        </p>
+
+        <div class="producto">
+
+            🔫 Pistola mejorada
+
+            <br>
+
+            <small>
+                Hace 2 de daño por disparo
+            </small>
+
+            <br>
+
+            <button id="comprarPistola">
+                Comprar — 500 puntos
+            </button>
+
+        </div>
+
+
+        <div class="producto">
+
+            💥 Escopeta
+
+            <br>
+
+            <small>
+                Dispara 5 proyectiles
+            </small>
+
+            <br>
+
+            <button id="comprarEscopeta">
+                Comprar — 1000 puntos
+            </button>
+
+        </div>
+
+
+        <div class="producto">
+
+            🛡️ Chaleco
+
+            <br>
+
+            <small>
+                Reduce el daño recibido
+            </small>
+
+            <br>
+
+            <button id="comprarChaleco">
+                Comprar — 750 puntos
+            </button>
+
+        </div>
+
+
+        <div class="producto">
+
+            ❤️ Botiquín
+
+            <br>
+
+            <small>
+                Recupera 30 de vida
+            </small>
+
+            <br>
+
+            <button id="comprarBotiquin">
+                Comprar — 300 puntos
+            </button>
+
+        </div>
+
+
+        <button id="continuar">
+            ▶ CONTINUAR
+        </button>
+
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+
+// ========================================
+// ESCENA
+// ========================================
+
+const escena = new THREE.Scene();
+
+escena.background =
+    new THREE.Color(0x87CEEB);
+
+
+// ========================================
+// LUZ
+// ========================================
+
+const luz =
+    new THREE.HemisphereLight(
+        0xffffff,
+        0x444444,
+        2
+    );
+
+escena.add(luz);
+
+
+// ========================================
+// JUGADOR
+// ========================================
+
+const jugador =
+    new THREE.Object3D();
+
+jugador.position.set(
+    0,
+    0,
+    5
+);
+
+escena.add(jugador);
+
+
+// ========================================
+// CÁMARA
+// ========================================
+
+const camara =
+    new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        1000
+    );
+
+camara.position.set(
+    0,
+    1.7,
+    0
+);
+
+jugador.add(camara);
+
+
+// ========================================
+// RENDERIZADOR
+// ========================================
+
+const renderizador =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
+
+renderizador.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+document.body.appendChild(
+    renderizador.domElement
+);
+
+
+// ========================================
+// SUELO
+// ========================================
+
+const TAMANO_MAPA = 200;
+
+const sueloGeometria =
+    new THREE.PlaneGeometry(
+        TAMANO_MAPA,
+        TAMANO_MAPA
+    );
+
+const sueloMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x3b7d3b
+    });
+
+const suelo =
+    new THREE.Mesh(
+        sueloGeometria,
+        sueloMaterial
+    );
+
+suelo.rotation.x =
+    -Math.PI / 2;
+
+escena.add(suelo);
+
+
+// ========================================
+// CUADRÍCULA
+// ========================================
+
+const cuadricula =
+    new THREE.GridHelper(
+        TAMANO_MAPA,
+        100,
+        0x222222,
+        0x555555
+    );
+
+cuadricula.position.y =
+    0.01;
+
+escena.add(cuadricula);
+
+
+// ========================================
+// PAREDES
+// ========================================
+
+const BORDE = 99;
+
+const ALTURA_PARED = 10;
+
+const GROSOR_PARED = 2;
+
+const materialInvisible =
+    new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0
+    });
+
+
+// Norte
+
+const paredNorte =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            TAMANO_MAPA,
+            ALTURA_PARED,
+            GROSOR_PARED
+        ),
+        materialInvisible
+    );
+
+paredNorte.position.set(
+    0,
+    ALTURA_PARED / 2,
+    -BORDE
+);
+
+escena.add(paredNorte);
+
+
+// Sur
+
+const paredSur =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            TAMANO_MAPA,
+            ALTURA_PARED,
+            GROSOR_PARED
+        ),
+        materialInvisible
+    );
+
+paredSur.position.set(
+    0,
+    ALTURA_PARED / 2,
+    BORDE
+);
+
+escena.add(paredSur);
+
+
+// Oeste
+
+const paredOeste =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            GROSOR_PARED,
+            ALTURA_PARED,
+            TAMANO_MAPA
+        ),
+        materialInvisible
+    );
+
+paredOeste.position.set(
+    -BORDE,
+    ALTURA_PARED / 2,
+    0
+);
+
+escena.add(paredOeste);
+
+
+// Este
+
+const paredEste =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            GROSOR_PARED,
+            ALTURA_PARED,
+            TAMANO_MAPA
+        ),
+        materialInvisible
+    );
+
+paredEste.position.set(
+    BORDE,
+    ALTURA_PARED / 2,
+    0
+);
+
+escena.add(paredEste);
+
+
+// ========================================
+// TECLADO
+// ========================================
+
+const teclas = {};
+
+document.addEventListener(
+    "keydown",
+    (evento) => {
+
+        teclas[
+            evento.key.toLowerCase()
+        ] = true;
+
+        if (
+            evento.key.toLowerCase()
+            === "r"
+        ) {
+            recargar();
+        }
+    }
+);
+
+document.addEventListener(
+    "keyup",
+    (evento) => {
+
+        teclas[
+            evento.key.toLowerCase()
+        ] = false;
+    }
+);
+
+
+// ========================================
+// MOUSE
+// ========================================
+
+let yaw = 0;
+
+let pitch = 0;
+
+document.addEventListener(
+    "click",
+    () => {
+
+        if (
+            document.pointerLockElement
+            !== document.body
+        ) {
+
+            document.body
+                .requestPointerLock();
+
+            return;
+        }
+
+        disparar();
+    }
+);
+
+document.addEventListener(
+    "mousemove",
+    (evento) => {
+
+        if (
+            document.pointerLockElement
+            !== document.body
+        ) {
+            return;
+        }
+
+        const sensibilidad =
+            0.002;
+
+        yaw -=
+            evento.movementX *
+            sensibilidad;
+
+        pitch -=
+            evento.movementY *
+            sensibilidad;
+
+        const limiteVertical =
+            Math.PI / 2 - 0.05;
+
+        pitch =
+            Math.max(
+                -limiteVertical,
+                Math.min(
+                    limiteVertical,
+                    pitch
+                )
+            );
+
+        jugador.rotation.y =
+            yaw;
+
+        camara.rotation.x =
+            pitch;
+    }
+);
+
+
+// ========================================
+// MOVIMIENTO
+// ========================================
+
+const velocidad = 0.12;
+
+function actualizarJugador() {
+
+    let adelante = 0;
+
+    let derecha = 0;
+
+
+    if (teclas["w"]) {
+        adelante += 1;
+    }
+
+    if (teclas["s"]) {
+        adelante -= 1;
+    }
+
+    if (teclas["d"]) {
+        derecha += 1;
+    }
+
+    if (teclas["a"]) {
+        derecha -= 1;
+    }
+
+
+    const longitud =
+        Math.sqrt(
+            adelante *
+            adelante +
+            derecha *
+            derecha
+        );
+
+
+    if (longitud > 0) {
+
+        adelante /=
+            longitud;
+
+        derecha /=
+            longitud;
+
+
+        jugador.translateZ(
+            -adelante *
+            velocidad
+        );
+
+        jugador.translateX(
+            derecha *
+            velocidad
+        );
+    }
+
+
+    const radioJugador = 1;
+
+    const limiteMovimiento =
+        BORDE -
+        GROSOR_PARED / 2 -
+        radioJugador;
+
+
+    jugador.position.x =
+        Math.max(
+            -limiteMovimiento,
+            Math.min(
+                limiteMovimiento,
+                jugador.position.x
+            )
+        );
+
+
+    jugador.position.z =
+        Math.max(
+            -limiteMovimiento,
+            Math.min(
+                limiteMovimiento,
+                jugador.position.z
+            )
+        );
+
+
+    jugador.position.y = 0;
+}
+
+
+// ========================================
+// VARIABLES DEL JUEGO
+// ========================================
+
+let vida = 100;
+
+let puntuacion = 0;
+
+let oleada = 1;
+
+let proteccion = 0;
+
+let zombies = [];
+
+let juegoEnPausa = false;
+
+
+// ========================================
+// ARMAS
+// ========================================
+
+let armaActual = "pistola";
+
+let danoPistola = 1;
+
+const armas = {
+
+    pistola: {
+        nombre: "Pistola",
+        dano: 1,
+        cargador: 12,
+        cadencia: 250
+    },
+
+    pistolaMejorada: {
+        nombre: "Pistola mejorada",
+        dano: 2,
+        cargador: 12,
+        cadencia: 220
+    },
+
+    escopeta: {
+        nombre: "Escopeta",
+        dano: 2,
+        cargador: 6,
+        cadencia: 800
+    }
+
+};
+
+
+let municion =
+    armas.pistola.cargador;
+
+let recargando = false;
+
+let ultimoDisparo = 0;
+
+
+// ========================================
+// ELEMENTOS HTML
+// ========================================
+
+const numeroVida =
+    document.getElementById(
+        "numeroVida"
+    );
+
+const numeroPuntuacion =
+    document.getElementById(
+        "numeroPuntuacion"
+    );
+
+const numeroOleada =
+    document.getElementById(
+        "numeroOleada"
+    );
+
+const numeroMunicion =
+    document.getElementById(
+        "numeroMunicion"
+    );
+
+const numeroProteccion =
+    document.getElementById(
+        "numeroProteccion"
+    );
+
+const nombreArma =
+    document.getElementById(
+        "nombreArma"
+    );
+
+const mensajeDisparo =
+    document.getElementById(
+        "mensajeDisparo"
+    );
+
+const elementoRecargando =
+    document.getElementById(
+        "recargando"
+    );
+
+const tienda =
+    document.getElementById(
+        "tienda"
+    );
+
+const puntosTienda =
+    document.getElementById(
+        "puntosTienda"
+    );
+
+
+// ========================================
+// ACTUALIZAR UI
+// ========================================
+
+function actualizarUI() {
+
+    numeroVida.textContent =
+        vida;
+
+    numeroPuntuacion.textContent =
+        puntuacion;
+
+    numeroOleada.textContent =
+        oleada;
+
+    numeroMunicion.textContent =
+        municion;
+
+    numeroProteccion.textContent =
+        proteccion;
+
+    nombreArma.textContent =
+        armas[armaActual].nombre;
+
+    puntosTienda.textContent =
+        puntuacion;
+}
+
+
+// ========================================
+// MENSAJE
+// ========================================
+
+function mostrarMensaje(
+    texto
+) {
+
+    mensajeDisparo.textContent =
+        texto;
+
+    mensajeDisparo.style.opacity =
+        "1";
+
+    setTimeout(
+        () => {
+
+            mensajeDisparo.style.opacity =
+                "0";
+
+        },
+        500
+    );
+}
+
+
+// ========================================
+// CREAR ZOMBIE
+// ========================================
+
+function crearZombie(
+    x,
+    z,
+    tipo
+) {
+
+    const zombie =
+        new THREE.Group();
+
+
+    let vidaZombie = 3;
+
+    let velocidadZombie = 0.025;
+
+    let danoZombie = 10;
+
+    let puntosZombie = 100;
+
+    let colorCuerpo =
+        0x315c31;
+
+    let colorCabeza =
+        0x4f8f4f;
+
+
+    // ====================================
+    // TIPO RÁPIDO
+    // ====================================
+
+    if (
+        tipo === "rapido"
+    ) {
+
+        vidaZombie = 2;
+
+        velocidadZombie =
+            0.055;
+
+        danoZombie = 7;
+
+        puntosZombie = 150;
+
+        colorCuerpo =
+            0x777722;
+
+        colorCabeza =
+            0xaaaa44;
+    }
+
+
+    // ====================================
+    // TIPO BRUTO
+    // ====================================
+
+    if (
+        tipo === "bruto"
+    ) {
+
+        vidaZombie = 8;
+
+        velocidadZombie =
+            0.015;
+
+        danoZombie = 20;
+
+        puntosZombie = 300;
+
+        colorCuerpo =
+            0x552222;
+
+        colorCabeza =
+            0x883333;
+    }
+
+
+    // ====================================
+    // CUERPO
+    // ====================================
+
+    const cuerpo =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                tipo === "bruto"
+                    ? 1.5
+                    : 1,
+                tipo === "bruto"
+                    ? 2
+                    : 1.5,
+                tipo === "bruto"
+                    ? 1
+                    : 0.7
+            ),
+            new THREE.MeshStandardMaterial({
+                color:
+                    colorCuerpo
+            })
+        );
+
+
+    cuerpo.position.y =
+        tipo === "bruto"
+            ? 1
+            : 0.75;
+
+
+    zombie.add(cuerpo);
+
+
+    // ====================================
+    // CABEZA
+    // ====================================
+
+    const cabeza =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                tipo === "bruto"
+                    ? 1
+                    : 0.8,
+                tipo === "bruto"
+                    ? 1
+                    : 0.8,
+                tipo === "bruto"
+                    ? 1
+                    : 0.8
+            ),
+            new THREE.MeshStandardMaterial({
+                color:
+                    colorCabeza
+            })
+        );
+
+
+    cabeza.position.y =
+        tipo === "bruto"
+            ? 2.3
+            : 1.9;
+
+
+    zombie.add(cabeza);
+
+
+    // ====================================
+    // OJOS
+    // ====================================
+
+    const ojoMaterial =
+        new THREE.MeshBasicMaterial({
+            color: 0xff0000
+        });
+
+
+    const ojoIzquierdo =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.08,
+                8,
+                8
+            ),
+            ojoMaterial
+        );
+
+
+    ojoIzquierdo.position.set(
+        -0.18,
+        tipo === "bruto"
+            ? 2.4
+            : 2,
+        -0.4
+    );
+
+
+    zombie.add(
+        ojoIzquierdo
+    );
+
+
+    const ojoDerecho =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.08,
+                8,
+                8
+            ),
+            ojoMaterial
+        );
+
+
+    ojoDerecho.position.set(
+        0.18,
+        tipo === "bruto"
+            ? 2.4
+            : 2,
+        -0.4
+    );
+
+
+    zombie.add(
+        ojoDerecho
+    );
+
+
+    zombie.position.set(
+        x,
+        0,
+        z
+    );
+
+
+    escena.add(zombie);
+
+
+    zombies.push({
+
+        objeto:
+            zombie,
+
+        vida:
+            vidaZombie,
+
+        velocidad:
+            velocidadZombie,
+
+        dano:
+            danoZombie,
+
+        puntos:
+            puntosZombie,
+
+        tipo:
+            tipo,
+
+        ultimoAtaque:
+            0
+
+    });
+}
+
+
+// ========================================
+// CREAR OLEADA
+// ========================================
+
+function crearOleada() {
+
+    juegoEnPausa = false;
+
+
+    const cantidad =
+        4 +
+        oleada * 2;
+
+
+    for (
+        let i = 0;
+        i < cantidad;
+        i++
+    ) {
+
+        const angulo =
+            Math.random() *
+            Math.PI * 2;
+
+
+        const distancia =
+            20 +
+            Math.random() * 25;
+
+
+        const x =
+            Math.cos(angulo) *
+            distancia;
+
+
+        const z =
+            Math.sin(angulo) *
+            distancia;
+
+
+        let tipo = "normal";
+
+
+        const numero =
+            Math.random();
+
+
+        if (
+            oleada >= 2 &&
+            numero < 0.25
+        ) {
+
+            tipo =
+                "rapido";
+        }
+
+
+        if (
+            oleada >= 4 &&
+            numero < 0.15
+        ) {
+
+            tipo =
+                "bruto";
+        }
+
+
+        crearZombie(
+            x,
+            z,
+            tipo
+        );
+    }
+
+
+    mostrarMensaje(
+        "🌊 ¡OLEADA " +
+        oleada +
+        "!"
+    );
+
+
+    actualizarUI();
+}
+
+
+// ========================================
+// COMPROBAR OLEADA
+// ========================================
+
+function comprobarOleada() {
+
+    if (
+        zombies.length === 0 &&
+        !juegoEnPausa
+    ) {
+
+        juegoEnPausa = true;
+
+
+        setTimeout(
+            () => {
+
+                abrirTienda();
+
+            },
+            1000
+        );
+    }
+}
+
+
+// ========================================
+// TIENDA
+// ========================================
+
+function abrirTienda() {
+
+    actualizarUI();
+
+    tienda.style.display =
+        "flex";
+}
+
+
+function cerrarTienda() {
+
+    tienda.style.display =
+        "none";
+
+    oleada++;
+
+    numeroOleada.textContent =
+        oleada;
+
+
+    setTimeout(
+        () => {
+
+            crearOleada();
+
+        },
+        700
+    );
+}
+
+
+// ========================================
+// COMPRAR PISTOLA
+// ========================================
+
+document.getElementById(
+    "comprarPistola"
+).addEventListener(
+    "click",
+    () => {
+
+        if (
+            puntuacion < 500
+        ) {
+
+            mostrarMensaje(
+                "❌ No tienes suficientes puntos"
+            );
+
+            return;
+        }
+
+
+        puntuacion -= 500;
+
+        armaActual =
+            "pistolaMejorada";
+
+
+        municion =
+            armas[
+                armaActual
+            ].cargador;
+
+
+        actualizarUI();
+
+
+        mostrarMensaje(
+            "🔫 ¡Pistola mejorada!"
+        );
+    }
+);
+
+
+// ========================================
+// COMPRAR ESCOPETA
+// ========================================
+
+document.getElementById(
+    "comprarEscopeta"
+).addEventListener(
+    "click",
+    () => {
+
+        if (
+            puntuacion < 1000
+        ) {
+
+            mostrarMensaje(
+                "❌ No tienes suficientes puntos"
+            );
+
+            return;
+        }
+
+
+        puntuacion -= 1000;
+
+        armaActual =
+            "escopeta";
+
+
+        municion =
+            armas[
+                armaActual
+            ].cargador;
+
+
+        actualizarUI();
+
+
+        mostrarMensaje(
+            "💥 ¡Escopeta comprada!"
+        );
+    }
+);
+
+
+// ========================================
+// COMPRAR CHALECO
+// ========================================
+
+document.getElementById(
+    "comprarChaleco"
+).addEventListener(
+    "click",
+    () => {
+
+        if (
+            puntuacion < 750
+        ) {
+
+            mostrarMensaje(
+                "❌ No tienes suficientes puntos"
+            );
+
+            return;
+        }
+
+
+        if (
+            proteccion >= 50
+        ) {
+
+            mostrarMensaje(
+                "🛡️ Protección máxima"
+            );
+
+            return;
+        }
+
+
+        puntuacion -= 750;
+
+        proteccion += 25;
+
+
+        if (
+            proteccion > 50
+        ) {
+
+            proteccion = 50;
+        }
+
+
+        actualizarUI();
+
+
+        mostrarMensaje(
+            "🛡️ ¡Protección mejorada!"
+        );
+    }
+);
+
+
+// ========================================
+// COMPRAR BOTIQUÍN
+// ========================================
+
+document.getElementById(
+    "comprarBotiquin"
+).addEventListener(
+    "click",
+    () => {
+
+        if (
+            puntuacion < 300
+        ) {
+
+            mostrarMensaje(
+                "❌ No tienes suficientes puntos"
+            );
+
+            return;
+        }
+
+
+        if (
+            vida >= 100
+        ) {
+
+            mostrarMensaje(
+                "❤️ Ya tienes la vida completa"
+            );
+
+            return;
+        }
+
+
+        puntuacion -= 300;
+
+        vida += 30;
+
+
+        if (
+            vida > 100
+        ) {
+
+            vida = 100;
+        }
+
+
+        actualizarUI();
+
+
+        mostrarMensaje(
+            "❤️ ¡Vida recuperada!"
+        );
+    }
+);
+
+
+// ========================================
+// CONTINUAR
+// ========================================
+
+document.getElementById(
+    "continuar"
+).addEventListener(
+    "click",
+    () => {
+
+        cerrarTienda();
+
+    }
+);
+
+
+// ========================================
+// RECARGAR
+// ========================================
+
+function recargar() {
+
+    if (recargando) {
+        return;
+    }
+
+
+    const cargador =
+        armas[
+            armaActual
+        ].cargador;
+
+
+    if (
+        municion === cargador
+    ) {
+        return;
+    }
+
+
+    recargando = true;
+
+
+    elementoRecargando.style.display =
+        "block";
+
+
+    setTimeout(
+        () => {
+
+            municion =
+                cargador;
+
+
+            recargando =
+                false;
+
+
+            elementoRecargando.style.display =
+                "none";
+
+
+            actualizarUI();
+
+        },
+        1200
+    );
+}
+
+
+// ========================================
+// DISPARAR
+// ========================================
+
+function disparar() {
+
+    if (recargando) {
+        return;
+    }
+
+
+    const arma =
+        armas[
+            armaActual
+        ];
+
+
+    const ahora =
+        Date.now();
+
+
+    if (
+        ahora -
+        ultimoDisparo <
+        arma.cadencia
+    ) {
+
+        return;
+    }
+
+
+    ultimoDisparo =
+        ahora;
+
+
+    if (
+        municion <= 0
+    ) {
+
+        mostrarMensaje(
+            "🔄 ¡Recarga!"
+        );
+
+        return;
+    }
+
+
+    municion--;
+
+
+    actualizarUI();
+
+
+    // ====================================
+    // ESCOPETA
+    // ====================================
+
+    if (
+        armaActual ===
+        "escopeta"
+    ) {
+
+        dispararEscopeta();
+
+        return;
+    }
+
+
+    // ====================================
+    // PISTOLA
+    // ====================================
+
+    dispararRayo(
+        arma.dano,
+        0,
+        0
+    );
+}
+
+
+// ========================================
+// DISPARO DE ESCOPETA
+// ========================================
+
+function dispararEscopeta() {
+
+    let impactosTotales = 0;
+
+
+    const desviaciones = [
+
+        [-0.04, 0],
+
+        [0.04, 0],
+
+        [0, 0.04],
+
+        [0, -0.04],
+
+        [0, 0]
+
+    ];
+
+
+    for (
+        const desviacion
+        of desviaciones
+    ) {
+
+        impactosTotales +=
+            dispararRayo(
+                2,
+                desviacion[0],
+                desviacion[1]
+            );
+    }
+
+
+    if (
+        impactosTotales === 0
+    ) {
+
+        mostrarMensaje(
+            "💥 ¡Fallaste!"
+        );
+    }
+}
+
+
+// ========================================
+// RAYO
+// ========================================
+
+function dispararRayo(
+    dano,
+    offsetX,
+    offsetY
+) {
+
+    const raycaster =
+        new THREE.Raycaster();
+
+
+    const direccion =
+        new THREE.Vector2(
+            offsetX,
+            offsetY
+        );
+
+
+    raycaster.setFromCamera(
+        direccion,
+        camara
+    );
+
+
+    const objetosZombie = [];
+
+
+    for (
+        const zombie
+        of zombies
+    ) {
+
+        for (
+            const parte
+            of zombie.objeto.children
+        ) {
+
+            objetosZombie.push(
+                parte
+            );
+        }
+    }
+
+
+    const impactos =
+        raycaster.intersectObjects(
+            objetosZombie,
+            false
+        );
+
+
+    if (
+        impactos.length === 0
+    ) {
+
+        return 0;
+    }
+
+
+    const objetoGolpeado =
+        impactos[0].object;
+
+
+    let zombieGolpeado =
+        null;
+
+
+    for (
+        const zombie
+        of zombies
+    ) {
+
+        if (
+            zombie.objeto.children
+                .includes(
+                    objetoGolpeado
+                )
+        ) {
+
+            zombieGolpeado =
+                zombie;
+
+            break;
+        }
+    }
+
+
+    if (
+        !zombieGolpeado
+    ) {
+
+        return 0;
+    }
+
+
+    zombieGolpeado.vida -=
+        dano;
+
+
+    mostrarMensaje(
+        "💥 ¡IMPACTO!"
+    );
+
+
+    if (
+        zombieGolpeado.vida <= 0
+    ) {
+
+        eliminarZombie(
+            zombieGolpeado
+        );
+    }
+
+
+    return 1;
+}
+
+
+// ========================================
+// ELIMINAR ZOMBIE
+// ========================================
+
+function eliminarZombie(
+    zombie
+) {
+
+    escena.remove(
+        zombie.objeto
+    );
+
+
+    const indice =
+        zombies.indexOf(
+            zombie
+        );
+
+
+    if (
+        indice !== -1
+    ) {
+
+        zombies.splice(
+            indice,
+            1
+        );
+    }
+
+
+    puntuacion +=
+        zombie.puntos;
+
+
+    actualizarUI();
+
+
+    mostrarMensaje(
+        "🧟 ¡ELIMINADO! +" +
+        zombie.puntos
+    );
+
+
+    comprobarOleada();
+}
+
+
+// ========================================
+// ACTUALIZAR ZOMBIES
+// ========================================
+
+function actualizarZombies() {
+
+    const ahora =
+        Date.now();
+
+
+    for (
+        const zombie
+        of zombies
+    ) {
+
+        const objeto =
+            zombie.objeto;
+
+
+        const dx =
+            jugador.position.x -
+            objeto.position.x;
+
+
+        const dz =
+            jugador.position.z -
+            objeto.position.z;
+
+
+        const distancia =
+            Math.sqrt(
+                dx * dx +
+                dz * dz
+            );
+
+
+        objeto.lookAt(
+            jugador.position.x,
+            0,
+            jugador.position.z
+        );
+
+
+        if (
+            distancia > 2
+        ) {
+
+            objeto.position.x +=
+                (dx / distancia) *
+                zombie.velocidad;
+
+
+            objeto.position.z +=
+                (dz / distancia) *
+                zombie.velocidad;
+        }
+
+
+        if (
+            distancia <= 2 &&
+            ahora -
+            zombie.ultimoAtaque >
+            1000
+        ) {
+
+            let danoRecibido =
+                zombie.dano;
+
+
+            danoRecibido *=
+                1 -
+                proteccion / 100;
+
+
+            vida -=
+                Math.round(
+                    danoRecibido
+                );
+
+
+            if (
+                vida < 0
+            ) {
+
+                vida = 0;
+            }
+
+
+            zombie.ultimoAtaque =
+                ahora;
+
+
+            actualizarUI();
+
+
+            if (
+                vida === 0
+            ) {
+
+                alert(
+                    "💀 ¡HAS PERDIDO!\n\n" +
+                    "Oleada: " +
+                    oleada +
+                    "\n" +
+                    "Puntos: " +
+                    puntuacion
+                );
+
+
+                location.reload();
+            }
+        }
+    }
+}
+
+
+// ========================================
+// ANIMACIÓN
+// ========================================
+
+function animar() {
+
+    requestAnimationFrame(
+        animar
+    );
+
+
+    if (
+        !juegoEnPausa
+    ) {
+
+        actualizarJugador();
+
+        actualizarZombies();
+    }
+
+
+    renderizador.render(
+        escena,
+        camara
+    );
+}
+
+
+crearOleada();
+
+animar();
+
+
+// ========================================
+// REDIMENSIONAR
+// ========================================
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        camara.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+
+        camara.updateProjectionMatrix();
+
+
+        renderizador.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+    }
+);
+
+</script>
+
+</body>
+</html>
