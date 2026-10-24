@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Guerra Zombie</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #111;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+canvas { display: block; }
+
+.info {
+    position: fixed;
+    color: white;
+    font-family: Arial, sans-serif;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+    pointer-events: none;
+}
+#mensaje { top: 20px; left: 20px; font-size: 20px; }
+#vida { top: 20px; right: 20px; font-size: 20px; }
+#municion { top: 55px; right: 20px; font-size: 20px; }
+#puntuacion { top: 90px; right: 20px; font-size: 20px; }
+#oleada { top: 125px; right: 20px; font-size: 20px; }
+#arma { bottom: 70px; right: 25px; font-size: 20px; }
+#proteccion { bottom: 40px; right: 25px; font-size: 17px; }
+
+#instrucciones {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    z-index: 10;
+    text-shadow: 2px 2px 4px black;
+    pointer-events: none;
+}
+
+#puntoMira {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    margin-top: -4px;
+    border: 2px solid white;
+    border-radius: 50%;
+    z-index: 20;
+    pointer-events: none;
+}
+
+#mensajeDisparo {
+    position: fixed;
+    left: 50%;
+    top: 55%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 22px;
+    font-weight: bold;
+    z-index: 30;
+    pointer-events: none;
+    text-shadow: 2px 2px 4px black;
+    opacity: 0;
+}
+
+#recargando {
+    position: fixed;
+    left: 50%;
+    top: 60%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 30;
+    pointer-events: none;
+    text-shadow: 2px 2px 4px black;
+    display: none;
+}
+
+#barraJefe {
+    position: fixed;
+    top: 165px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(500px, 70%);
+    z-index: 25;
+    display: none;
+    font-family: Arial, sans-serif;
+    color: white;
+    text-align: center;
+    text-shadow: 2px 2px 4px black;
+}
+#nombreJefe {
+    font-size: 20px;
+    font-weight: bold;
+}
+#fondoBarraJefe {
+    width: 100%;
+    height: 18px;
+    margin-top: 5px;
+    background: #222;
+    border: 2px solid white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+#vidaBarraJefe {
+    width: 100%;
+    height: 100%;
+    background: #777;
+    transition: width 0.1s linear;
+}
+
+#tienda, #tiendaJefe {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+#tiendaJefe { z-index: 110; }
+
+#tiendaCaja, #tiendaJefeCaja {
+    width: 430px;
+    max-width: 88%;
+    max-height: 85%;
+    overflow-y: auto;
+    background: #222;
+    border: 2px solid #777;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 0 30px black;
+}
+#tiendaJefeCaja { border-color: #aaa; }
+
+#tiendaCaja h1, #tiendaJefeCaja h1 { margin-top: 0; }
+
+.producto {
+    background: #333;
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.producto button, #continuar, #continuarJefe {
+    margin-top: 8px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+#continuar, #continuarJefe {
+    margin-top: 20px;
+    width: 100%;
+    padding: 13px;
+    background: #555;
+    color: white;
+}
+
+#controlesMovil { display: none; }
+
+#joystickBase {
+    position: fixed;
+    left: 25px;
+    bottom: 25px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.35);
+    z-index: 50;
+}
+#joystick {
+    position: absolute;
+    left: 35px;
+    top: 35px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.45);
+}
+
+.botonMovil {
+    position: fixed;
+    z-index: 50;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.5);
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 2px 2px 3px black;
+    background: rgba(40,40,40,0.6);
+    touch-action: none;
+}
+#botonDisparo {
+    right: 25px;
+    bottom: 35px;
+    width: 85px;
+    height: 85px;
+}
+#botonRecargar {
+    right: 125px;
+    bottom: 45px;
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+}
+#botonTienda {
+    right: 25px;
+    bottom: 140px;
+    width: 55px;
+    height: 55px;
+    font-size: 18px;
+}
+
+@media (pointer: coarse) {
+    #controlesMovil { display: block; }
+    #instrucciones { display: none; }
+    #arma { bottom: 175px; right: 20px; font-size: 17px; }
+    #proteccion { bottom: 145px; right: 20px; }
+    #puntoMira { width: 6px; height: 6px; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="mensaje" class="info">
+    🧟 GUERRA ZOMBIE<br>
+    <span style="font-size:14px;">Sobrevive a las oleadas</span>
+</div>
+
+<div id="vida" class="info">❤️ Vida: <span id="numeroVida">100</span></div>
+<div id="municion" class="info">
+    🔫 Munición: <span id="numeroMunicion">12</span> /
+    <span id="maxMunicion">12</span>
+</div>
+<div id="puntuacion" class="info">🏆 Puntos: <span id="numeroPuntuacion">0</span></div>
+<div id="oleada" class="info">🌊 Oleada: <span id="numeroOleada">1</span></div>
+<div id="arma" class="info">🔫 <span id="nombreArma">Pistola</span></div>
+<div id="proteccion" class="info">🛡️ Protección: <span id="numeroProteccion">0</span>%</div>
+
+<div id="instrucciones">
+    CLIC = jugar/disparar | WASD = moverse | MOUSE = mirar | R = recargar
+</div>
+
+<div id="puntoMira"></div>
+<div id="mensajeDisparo"></div>
+
+<div id="recargando">🔄 RECARGANDO...</div>
+
+<div id="barraJefe">
+    <div id="nombreJefe">🩶 ZOMBIE GRIS</div>
+    <div id="fondoBarraJefe"><div id="vidaBarraJefe"></div></div>
+</div>
+
+<!-- TIENDA NORMAL -->
+<div id="tienda">
+    <div id="tiendaCaja">
+        <h1>🏪 TIENDA</h1>
+        <p>💰 Puntos: <span id="puntosTienda">0</span></p>
+
+        <div class="producto">
+            🔫 Pistola mejorada<br>
+            <small>Hace 2 de daño</small><br>
+            <button id="comprarPistola">Comprar — 500</button>
+        </div>
+
+        <div class="producto">
+            💥 Escopeta<br>
+            <small>Dispara 5 proyectiles</small><br>
+            <button id="comprarEscopeta">Comprar — 1000</button>
+        </div>
+
+        <div class="producto">
+            🛡️ Chaleco<br>
+            <small>Reduce el daño recibido</small><br>
+            <button id="comprarChaleco">Comprar — 750</button>
+        </div>
+
+        <div class="producto">
+            ❤️ Botiquín<br>
+            <small>Recupera 30 de vida</small><br>
+            <button id="comprarBotiquin">Comprar — 300</button>
+        </div>
+
+        <button id="continuar">▶ CONTINUAR</button>
+    </div>
+</div>
+
+<!-- TIENDA DE JEFES -->
+<div id="tiendaJefe">
+    <div id="tiendaJefeCaja">
+        <h1>👑 TIENDA DE JEFES</h1>
+        <p>💰 Puntos: <span id="puntosTiendaJefe">0</span></p>
+
+        <div class="producto">
+            🔫 Rifle Gris<br>
+            <small id="estadoRifle">Arma desbloqueada al derrotar al Zombie Gris</small><br>
+            <button id="equiparRifleGris">EQUIPAR</button>
+        </div>
+
+        <div class="producto">
+            🛡️ Armadura Gris<br>
+            <small>Aumenta tu protección en 25%</small><br>
+            <button id="comprarArmaduraGris">Comprar — 2500</button>
+        </div>
+
+        <div class="producto">
+            ⚡ Munición Especial<br>
+            <small>Aumenta permanentemente el daño de tus armas en 1</small><br>
+            <button id="comprarMunicionEspecial">Comprar — 1500</button>
+        </div>
+
+        <div class="producto">
+            ❤️ Regeneración<br>
+            <small>Recupera 60 de vida</small><br>
+            <button id="comprarRegeneracion">Comprar — 2000</button>
+        </div>
+
+        <button id="continuarJefe">▶ CONTINUAR</button>
+    </div>
+</div>
+
+<!-- CONTROLES MÓVILES -->
+<div id="controlesMovil">
+    <div id="joystickBase"><div id="joystick"></div></div>
+
+    <button id="botonDisparo" class="botonMovil">🔥</button>
+    <button id="botonRecargar" class="botonMovil">🔄</button>
+    <button id="botonTienda" class="botonMovil">🏪</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+/* ========================================
+   ESCENA
+======================================== */
+
+const escena = new THREE.Scene();
+escena.background = new THREE.Color(0x87CEEB);
+
+const luz = new THREE.HemisphereLight(0xffffff, 0x444444, 2);
+escena.add(luz);
+
+const jugador = new THREE.Object3D();
+jugador.position.set(0, 0, 5);
+escena.add(jugador);
+
+const camara = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+camara.position.set(0, 1.7, 0);
+jugador.add(camara);
+
+const renderizador = new THREE.WebGLRenderer({ antialias: true });
+renderizador.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderizador.domElement);
+
+
+/* ========================================
+   MAPA
+======================================== */
+
+const TAMANO_MAPA = 200;
+
+const suelo = new THREE.Mesh(
+    new THREE.PlaneGeometry(TAMANO_MAPA, TAMANO_MAPA),
+    new THREE.MeshStandardMaterial({ color: 0x3b7d3b })
+);
+suelo.rotation.x = -Math.PI / 2;
+escena.add(suelo);
+
+const cuadricula = new THREE.GridHelper(
+    TAMANO_MAPA,
+    100,
+    0x222222,
+    0x555555
+);
+cuadricula.position.y = 0.01;
+escena.add(cuadricula);
+
+const BORDE = 99;
+const ALTURA_PARED = 10;
+const GROSOR_PARED = 2;
+
+const materialInvisible = new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0
+});
+
+function crearPared(ancho, alto, profundo, x, y, z) {
+    const pared = new THREE.Mesh(
+        new THREE.BoxGeometry(ancho, alto, profundo),
+        materialInvisible
+    );
+    pared.position.set(x, y, z);
+    escena.add(pared);
+}
+
+crearPared(TAMANO_MAPA, ALTURA_PARED, GROSOR_PARED, 0, ALTURA_PARED / 2, -BORDE);
+crearPared(TAMANO_MAPA, ALTURA_PARED, GROSOR_PARED, 0, ALTURA_PARED / 2, BORDE);
+crearPared(GROSOR_PARED, ALTURA_PARED, TAMANO_MAPA, -BORDE, ALTURA_PARED / 2, 0);
+crearPared(GROSOR_PARED, ALTURA_PARED, TAMANO_MAPA, BORDE, ALTURA_PARED / 2, 0);
+
+
+/* ========================================
+   ESTADO
+======================================== */
+
+const teclas = {};
+
+let yaw = 0;
+let pitch = 0;
+
+let vida = 100;
+let puntuacion = 0;
+let oleada = 1;
+let proteccion = 0;
+
+let zombies = [];
+let juegoEnPausa = false;
+
+let armaActual = "pistola";
+let municion = 12;
+let recargando = false;
+let ultimoDisparo = 0;
+
+let rifleGrisDesbloqueado = false;
+let danoEspecial = 0;
+let nombreJefeActual = "🩶 ZOMBIE GRIS";
+
+
+/* ========================================
+   ARMAS
+======================================== */
+
+const armas = {
+    pistola: {
+        nombre: "Pistola",
+        dano: 1,
+        cargador: 12,
+        cadencia: 250
+    },
+
+    pistolaMejorada: {
+        nombre: "Pistola mejorada",
+        dano: 2,
+        cargador: 12,
+        cadencia: 220
+    },
+
+    escopeta: {
+        nombre: "Escopeta",
+        dano: 2,
+        cargador: 6,
+        cadencia: 800
+    },
+
+    rifleGris: {
+        nombre: "Rifle Gris",
+        dano: 5,
+        cargador: 8,
+        cadencia: 350
+    }
+};
+
+
+/* ========================================
+   HTML
+======================================== */
+
+const numeroVida = document.getElementById("numeroVida");
+const numeroPuntuacion = document.getElementById("numeroPuntuacion");
+const numeroOleada = document.getElementById("numeroOleada");
+const numeroMunicion = document.getElementById("numeroMunicion");
+const maxMunicion = document.getElementById("maxMunicion");
+const numeroProteccion = document.getElementById("numeroProteccion");
+const nombreArma = document.getElementById("nombreArma");
+const mensajeDisparo = document.getElementById("mensajeDisparo");
+const elementoRecargando = document.getElementById("recargando");
+
+const tienda = document.getElementById("tienda");
+const puntosTienda = document.getElementById("puntosTienda");
+
+const tiendaJefe = document.getElementById("tiendaJefe");
+const puntosTiendaJefe = document.getElementById("puntosTiendaJefe");
+const estadoRifle = document.getElementById("estadoRifle");
+
+const barraJefe = document.getElementById("barraJefe");
+const vidaBarraJefe = document.getElementById("vidaBarraJefe");
+
+
+/* ========================================
+   UI
+======================================== */
+
+function actualizarUI() {
+    numeroVida.textContent = vida;
+    numeroPuntuacion.textContent = puntuacion;
+    numeroOleada.textContent = oleada;
+    numeroMunicion.textContent = municion;
+    maxMunicion.textContent = armas[armaActual].cargador;
+    numeroProteccion.textContent = proteccion;
+    nombreArma.textContent = armas[armaActual].nombre;
+
+    puntosTienda.textContent = puntuacion;
+    puntosTiendaJefe.textContent = puntuacion;
+
+    if (rifleGrisDesbloqueado) {
+        estadoRifle.textContent = "🔓 DESBLOQUEADO";
+    } else {
+        estadoRifle.textContent = "🔒 Derrota al Zombie Gris para desbloquearlo";
+    }
+}
+
+
+/* ========================================
+   MENSAJES
+======================================== */
+
+function mostrarMensaje(texto) {
+    mensajeDisparo.textContent = texto;
+    mensajeDisparo.style.opacity = "1";
+
+    setTimeout(() => {
+        mensajeDisparo.style.opacity = "0";
+    }, 700);
+}
+
+
+/* ========================================
+   TECLADO
+======================================== */
+
+document.addEventListener("keydown", evento => {
+    teclas[evento.key.toLowerCase()] = true;
+
+    if (evento.key.toLowerCase() === "r") {
+        recargar();
+    }
+});
+
+document.addEventListener("keyup", evento => {
+    teclas[evento.key.toLowerCase()] = false;
+});
+
+
+/* ========================================
+   MOUSE PC
+======================================== */
+
+document.addEventListener("click", () => {
+    if ("ontouchstart" in window) return;
+
+    if (document.pointerLockElement !== document.body) {
+        document.body.requestPointerLock();
+        return;
+    }
+
+    disparar();
+});
+
+document.addEventListener("mousemove", evento => {
+    if (document.pointerLockElement !== document.body) return;
+
+    const sensibilidad = 0.002;
+
+    yaw -= evento.movementX * sensibilidad;
+    pitch -= evento.movementY * sensibilidad;
+
+    limitarVista();
+
+    jugador.rotation.y = yaw;
+    camara.rotation.x = pitch;
+});
+
+function limitarVista() {
+    const limite = Math.PI / 2 - 0.05;
+
+    pitch = Math.max(
+        -limite,
+        Math.min(limite, pitch)
+    );
+}
+
+
+/* ========================================
+   MOVIMIENTO
+======================================== */
+
+function actualizarJugador() {
+    let adelante = 0;
+    let derecha = 0;
+
+    if (teclas["w"]) adelante += 1;
+    if (teclas["s"]) adelante -= 1;
+    if (teclas["d"]) derecha += 1;
+    if (teclas["a"]) derecha -= 1;
+
+    adelante += -joystickY;
+    derecha += joystickX;
+
+    const longitud = Math.sqrt(
+        adelante * adelante +
+        derecha * derecha
+    );
+
+    if (longitud > 0) {
+        adelante /= longitud;
+        derecha /= longitud;
+
+        const velocidad = 0.12;
+
+        jugador.translateZ(-adelante * velocidad);
+        jugador.translateX(derecha * velocidad);
+    }
+
+    const limite =
+        BORDE -
+        GROSOR_PARED / 2 -
+        1;
+
+    jugador.position.x = Math.max(
+        -limite,
+        Math.min(limite, jugador.position.x)
+    );
+
+    jugador.position.z = Math.max(
+        -limite,
+        Math.min(limite, jugador.position.z)
+    );
+
+    jugador.position.y = 0;
+}
+
+
+/* ========================================
+   CREAR ZOMBIE
+======================================== */
+
+function crearZombie(x, z, tipo = "normal") {
+    const zombie = new THREE.Group();
+
+    let vidaZombie = 3;
+    let velocidadZombie = 0.025;
+    let danoZombie = 10;
+    let puntosZombie = 100;
+
+    let cuerpoColor = 0x315c31;
+    let cabezaColor = 0x4f8f4f;
+
+    if (tipo === "rapido") {
+        vidaZombie = 2;
+        velocidadZombie = 0.055;
+        danoZombie = 7;
+        puntosZombie = 150;
+        cuerpoColor = 0x777722;
+        cabezaColor = 0xaaaa44;
+    }
+
+    if (tipo === "bruto") {
+        vidaZombie = 8;
+        velocidadZombie = 0.015;
+        danoZombie = 20;
+        puntosZombie = 300;
+        cuerpoColor = 0x552222;
+        cabezaColor = 0x883333;
+    }
+
+    const cuerpo = new THREE.Mesh(
+        new THREE.BoxGeometry(
+            tipo === "bruto" ? 1.5 : 1,
+            tipo === "bruto" ? 2 : 1.5,
+            tipo === "bruto" ? 1 : 0.7
+        ),
+        new THREE.MeshStandardMaterial({ color: cuerpoColor })
+    );
+
+    cuerpo.position.y =
+        tipo === "bruto" ? 1 : 0.75;
+
+    zombie.add(cuerpo);
+
+    const cabeza = new THREE.Mesh(
+        new THREE.BoxGeometry(
+            tipo === "bruto" ? 1 : 0.8,
+            tipo === "bruto" ? 1 : 0.8,
+            tipo === "bruto" ? 1 : 0.8
+        ),
+        new THREE.MeshStandardMaterial({ color: cabezaColor })
+    );
+
+    cabeza.position.y =
+        tipo === "bruto" ? 2.3 : 1.9;
+
+    zombie.add(cabeza);
+
+    const ojoMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff0000
+    });
+
+    for (const xOjo of [-0.18, 0.18]) {
+        const ojo = new THREE.Mesh(
+            new THREE.SphereGeometry(0.08, 8, 8),
+            ojoMaterial
+        );
+
+        ojo.position.set(
+            xOjo,
+            tipo === "bruto" ? 2.4 : 2,
+            -0.4
+        );
+
+        zombie.add(ojo);
+    }
+
+    zombie.position.set(x, 0, z);
+    escena.add(zombie);
+
+    zombies.push({
+        objeto: zombie,
+        vida: vidaZombie,
+        vidaMaxima: vidaZombie,
+        velocidad: velocidadZombie,
+        dano: danoZombie,
+        puntos: puntosZombie,
+        tipo: tipo,
+        ultimoAtaque: 0
+    });
+}
+
+
+/* ========================================
+   CREAR JEFE: ZOMBIE GRIS
+======================================== */
+
+function crearJefe() {
+    const jefe = new THREE.Group();
+
+    const vidaJefe = 35 + oleada * 5;
+    const velocidadJefe = 0.018;
+    const danoJefe = 25 + Math.floor(oleada / 10) * 3;
+    const puntosJefe = 1000 + oleada * 50;
+
+    const cuerpo = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 2.8, 1.3),
+        new THREE.MeshStandardMaterial({ color: 0x666666 })
+    );
+    cuerpo.position.y = 1.4;
+    jefe.add(cuerpo);
+
+    const cabeza = new THREE.Mesh(
+        new THREE.BoxGeometry(1.5, 1.5, 1.5),
+        new THREE.MeshStandardMaterial({ color: 0x999999 })
+    );
+    cabeza.position.y = 3.5;
+    jefe.add(cabeza);
+
+    const ojoMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff0000
+    });
+
+    for (const xOjo of [-0.3, 0.3]) {
+        const ojo = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 8, 8),
+            ojoMaterial
+        );
+
+        ojo.position.set(xOjo, 3.65, -0.7);
+        jefe.add(ojo);
+    }
+
+    const angulo = Math.random() * Math.PI * 2;
+    const distancia = 30;
+
+    jefe.position.set(
+        Math.cos(angulo) * distancia,
+        0,
+        Math.sin(angulo) * distancia
+    );
+
+    escena.add(jefe);
+
+    zombies.push({
+        objeto: jefe,
+        vida: vidaJefe,
+        vidaMaxima: vidaJefe,
+        velocidad: velocidadJefe,
+        dano: danoJefe,
+        puntos: puntosJefe,
+        tipo: "jefe",
+        ultimoAtaque: 0
+    });
+
+    nombreJefeActual = "🩶 ZOMBIE GRIS";
+    document.getElementById("nombreJefe").textContent = nombreJefeActual;
+    vidaBarraJefe.style.background = "#777";
+    barraJefe.style.display = "block";
+    vidaBarraJefe.style.width = "100%";
+
+    mostrarMensaje("👑 ¡ZOMBIE GRIS!");
+}
+
+
+/* ========================================
+   JEFE ESPECIAL: TITÁN LÁSER (OLEADA 20)
+======================================== */
+
+function crearJefeLaser() {
+    const jefe = new THREE.Group();
+    const vidaJefe = 220;
+
+    const materialCuerpo = new THREE.MeshStandardMaterial({
+        color: 0xffd400,
+        emissive: 0x7a5600,
+        emissiveIntensity: 0.65,
+        metalness: 0.25,
+        roughness: 0.35
+    });
+    const materialCabeza = new THREE.MeshStandardMaterial({
+        color: 0xffee55,
+        emissive: 0xaa7700,
+        emissiveIntensity: 0.8
+    });
+
+    const cuerpo = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3, 1.6), materialCuerpo);
+    cuerpo.position.y = 1.5;
+    jefe.add(cuerpo);
+
+    const cabeza = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.6, 1.6), materialCabeza);
+    cabeza.position.y = 3.8;
+    jefe.add(cabeza);
+
+    const ojoMaterial = new THREE.MeshBasicMaterial({ color: 0xff2200 });
+    for (const xOjo of [-0.38, 0.38]) {
+        const ojo = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), ojoMaterial);
+        ojo.position.set(xOjo, 3.9, -0.83);
+        jefe.add(ojo);
+    }
+
+    const angulo = Math.random() * Math.PI * 2;
+    jefe.position.set(Math.cos(angulo) * 34, 0, Math.sin(angulo) * 34);
+    escena.add(jefe);
+
+    const laserMaterial = new THREE.LineBasicMaterial({
+        color: 0xffe600,
+        linewidth: 4,
+        transparent: true,
+        opacity: 0.95
+    });
+    const laser = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 1, 0)]),
+        laserMaterial
+    );
+    laser.visible = false;
+    escena.add(laser);
+
+    zombies.push({
+        objeto: jefe,
+        vida: vidaJefe,
+        vidaMaxima: vidaJefe,
+        velocidad: 0.047,
+        dano: 35,
+        puntos: 5000,
+        tipo: "jefe20",
+        ultimoAtaque: 0,
+        dano: 20,
+        laser: laser,
+        laserActivoHasta: 0,
+        faseLaser: "espera",
+        siguienteAtaque: Date.now() + 1800,
+        finFaseLaser: 0,
+        disparosRafaga: 0,
+        objetivoLaser: null
+    });
+
+    nombreJefeActual = "⚡ TITÁN LÁSER — JEFE DE LA OLEADA 20";
+    document.getElementById("nombreJefe").textContent = nombreJefeActual;
+    vidaBarraJefe.style.background = "#ffd400";
+    barraJefe.style.display = "block";
+    vidaBarraJefe.style.width = "100%";
+    mostrarMensaje("⚠️ ¡TITÁN LÁSER! ¡ESQUIVA SU RAYO!");
+}
+
+
+/* ========================================
+   CREAR OLEADA
+======================================== */
+
+function crearOleada() {
+    juegoEnPausa = false;
+
+    // La oleada 20 es una batalla especial: aparece solo el Titán Láser.
+    if (oleada === 20) {
+        crearJefeLaser();
+        mostrarMensaje("⚡ ¡JEFE FINAL DE LA OLEADA 20!");
+        actualizarUI();
+        return;
+    }
+
+    const cantidad = 4 + oleada * 2;
+
+    for (let i = 0; i < cantidad; i++) {
+        const angulo = Math.random() * Math.PI * 2;
+        const distancia = 20 + Math.random() * 25;
+
+        const x = Math.cos(angulo) * distancia;
+        const z = Math.sin(angulo) * distancia;
+
+        let tipo = "normal";
+        const numero = Math.random();
+
+        if (oleada >= 2 && numero < 0.25) {
+            tipo = "rapido";
+        }
+
+        if (oleada >= 4 && numero < 0.15) {
+            tipo = "bruto";
+        }
+
+        crearZombie(x, z, tipo);
+    }
+
+    /* JEFE CADA 10 OLEADAS */
+    if (oleada % 10 === 0) {
+        crearJefe();
+    }
+
+    mostrarMensaje("🌊 ¡OLEADA " + oleada + "!");
+    actualizarUI();
+}
+
+
+/* ========================================
+   ELIMINAR ZOMBIE
+======================================== */
+
+function eliminarZombie(zombie) {
+    escena.remove(zombie.objeto);
+    if (zombie.laser) {
+        escena.remove(zombie.laser);
+        zombie.laser.geometry.dispose();
+        zombie.laser.material.dispose();
+    }
+
+    const indice = zombies.indexOf(zombie);
+
+    if (indice !== -1) {
+        zombies.splice(indice, 1);
+    }
+
+    puntuacion += zombie.puntos;
+
+    /* RECOMPENSA DEL JEFE */
+    if (zombie.tipo === "jefe") {
+        rifleGrisDesbloqueado = true;
+        barraJefe.style.display = "none";
+        mostrarMensaje("🔓 ¡RIFLE GRIS DESBLOQUEADO!");
+    } else if (zombie.tipo === "jefe20") {
+        barraJefe.style.display = "none";
+        mostrarMensaje("🏆 ¡DERROTASTE AL TITÁN LÁSER! +" + zombie.puntos);
+    }
+
+    actualizarUI();
+
+    if (zombie.tipo !== "jefe" && zombie.tipo !== "jefe20") {
+        mostrarMensaje("💀 +" + zombie.puntos);
+    }
+
+    comprobarOleada();
+}
+
+
+/* ========================================
+   COMPROBAR OLEADA
+======================================== */
+
+function comprobarOleada() {
+    if (zombies.length === 0 && !juegoEnPausa) {
+        juegoEnPausa = true;
+
+        setTimeout(() => {
+            if (oleada % 10 === 0) {
+                abrirTiendaJefe();
+            } else {
+                abrirTienda();
+            }
+        }, 1000);
+    }
+}
+
+
+/* ========================================
+   TIENDA NORMAL
+======================================== */
+
+function abrirTienda() {
+    actualizarUI();
+    tienda.style.display = "flex";
+}
+
+function cerrarTienda() {
+    tienda.style.display = "none";
+
+    oleada++;
+    actualizarUI();
+
+    setTimeout(crearOleada, 700);
+}
+
+
+/* ========================================
+   TIENDA DE JEFES
+======================================== */
+
+function abrirTiendaJefe() {
+    actualizarUI();
+    tiendaJefe.style.display = "flex";
+}
+
+function cerrarTiendaJefe() {
+    tiendaJefe.style.display = "none";
+
+    oleada++;
+    actualizarUI();
+
+    setTimeout(crearOleada, 700);
+}
+
+
+/* ========================================
+   COMPRAS TIENDA NORMAL
+======================================== */
+
+document.getElementById("comprarPistola").onclick = () => {
+    if (puntuacion < 500) {
+        mostrarMensaje("❌ Faltan puntos");
+        return;
+    }
+
+    puntuacion -= 500;
+    armaActual = "pistolaMejorada";
+    municion = armas[armaActual].cargador;
+
+    actualizarUI();
+    mostrarMensaje("🔫 ¡PISTOLA MEJORADA!");
+};
+
+document.getElementById("comprarEscopeta").onclick = () => {
+    if (puntuacion < 1000) {
+        mostrarMensaje("❌ Faltan puntos");
+        return;
+    }
+
+    puntuacion -= 1000;
+    armaActual = "escopeta";
+    municion = armas[armaActual].cargador;
+
+    actualizarUI();
+    mostrarMensaje("💥 ¡ESCOPETA!");
+};
+
+document.getElementById("comprarChaleco").onclick = () => {
+    if (puntuacion < 750) {
+        mostrarMensaje("❌ Faltan puntos");
+        return;
+    }
+
+    if (proteccion >= 50) {
+        mostrarMensaje("🛡️ Protección máxima");
+        return;
+    }
+
+    puntuacion -= 750;
+    proteccion += 25;
+
+    if (proteccion > 50) proteccion = 50;
+
+    actualizarUI();
+    mostrarMensaje("🛡️ ¡PROTECCIÓN!");
+};
+
+document.getElementById("comprarBotiquin").onclick = () => {
+    if (puntuacion < 300) {
+        mostrarMensaje("❌ Faltan puntos");
+        return;
+    }
+
+    if (vida >= 100) {
+        mostrarMensaje("❤️ Vida completa");
+        return;
+    }
+
+    puntuacion -= 300;
+    vida += 30;
+
+    if (vida > 100) vida = 100;
+
+    actualizarUI();
+    mostrarMensaje("❤️ ¡+30 VIDA!");
+};
+
+
+/* ========================================
+   TIENDA DE JEFES: RIFLE
+======================================== */
+
+document.getElementById("equiparRifleGris").onclick = () => {
+    if (!rifleGrisDesbloqueado) {
+        mostrarMensaje("🔒 Derrota al Zombie Gris primero");
+        return;
+    }
+
+    armaActual = "rifleGris";
+    municion = armas.rifleGris.cargador;
+
+    actualizarUI();
+    mostrarMensaje("🩶 ¡RIFLE GRIS EQUIPADO!");
+};
+
+
+/* ========================================
+   TIENDA DE JEFES: ARMADURA
+======================================== */
+
+document.getElementById("comprarArmaduraGris").onclick = () => {
+    if (puntuacion < 2500) {
+        mostrarMensaje("❌ Faltan puntos");
+        return;
+    }
+
+    if (proteccion >= 75) {
+        mostrarMensaje("🛡️ Protección máxima");
+        return;
+    }
+
+    puntuacion -= 2500;
+    proteccion += 25;
+
+    if (proteccion > 75) proteccion = 75;
+
+    actualizarUI();
+    mostrarMensaje("🛡️ ¡ARMADURA GRIS!");
+};
+
+
+/* ========================================
+   TIENDA DE JEFES: MUNICIÓN
+======================================== */
+
+document.getElementById("comprarMunicionEspecial").onclick = () => {
+    if (puntuacion < 1500) {
+        mostrarMensaje("❌ Faltan puntos");
+        return;
+    }
+
+    puntuacion -= 1500;
+    danoEspecial += 1;
+
+    actualizarUI();
+    mostrarMensaje("⚡ ¡MUNICIÓN ESPECIAL +1 DAÑO!");
+};
+
+
+/* ========================================
+   TIENDA DE JEFES: REGENERACIÓN
+======================================== */
+
+document.getElementById("comprarRegeneracion").onclick = () => {
+    if (puntuacion < 2000) {
+        mostrarMensaje("❌ Faltan puntos");
+        return;
+    }
+
+    if (vida >= 100) {
+        mostrarMensaje("❤️ Vida completa");
+        return;
+    }
+
+    puntuacion -= 2000;
+    vida += 60;
+
+    if (vida > 100) vida = 100;
+
+    actualizarUI();
+    mostrarMensaje("❤️ ¡+60 VIDA!");
+};
+
+
+/* ========================================
+   CONTINUAR TIENDAS
+======================================== */
+
+document.getElementById("continuar").onclick = () => {
+    cerrarTienda();
+};
+
+document.getElementById("continuarJefe").onclick = () => {
+    cerrarTiendaJefe();
+};
+
+
+/* ========================================
+   RECARGAR
+======================================== */
+
+function recargar() {
+    if (recargando) return;
+
+    const cargador = armas[armaActual].cargador;
+
+    if (municion >= cargador) return;
+
+    recargando = true;
+    elementoRecargando.style.display = "block";
+
+    setTimeout(() => {
+        municion = cargador;
+        recargando = false;
+        elementoRecargando.style.display = "none";
+        actualizarUI();
+    }, 1200);
+}
+
+
+/* ========================================
+   DISPARAR
+======================================== */
+
+function disparar() {
+    if (recargando) return;
+
+    const arma = armas[armaActual];
+    const ahora = Date.now();
+
+    if (ahora - ultimoDisparo < arma.cadencia) return;
+
+    ultimoDisparo = ahora;
+
+    if (municion <= 0) {
+        mostrarMensaje("🔄 ¡RECARGA!");
+        return;
+    }
+
+    municion--;
+    actualizarUI();
+
+    if (armaActual === "escopeta") {
+        dispararEscopeta();
+    } else {
+        dispararRayo(
+            arma.dano + danoEspecial,
+            0,
+            0
+        );
+    }
+}
+
+
+/* ========================================
+   ESCOPETA
+======================================== */
+
+function dispararEscopeta() {
+    const desviaciones = [
+        [-0.04, 0],
+        [0.04, 0],
+        [0, 0.04],
+        [0, -0.04],
+        [0, 0]
+    ];
+
+    let impactos = 0;
+
+    for (const desviacion of desviaciones) {
+        impactos += dispararRayo(
+            armas.escopeta.dano + danoEspecial,
+            desviacion[0],
+            desviacion[1]
+        );
+    }
+
+    if (impactos === 0) {
+        mostrarMensaje("💥 ¡FALLO!");
+    } else {
+        mostrarMensaje("💥 ¡ESCOPETAZO!");
+    }
+}
+
+
+/* ========================================
+   RAYCAST
+======================================== */
+
+function dispararRayo(dano, offsetX, offsetY) {
+    const raycaster = new THREE.Raycaster();
+
+    raycaster.setFromCamera(
+        new THREE.Vector2(offsetX, offsetY),
+        camara
+    );
+
+    const partes = [];
+
+    for (const zombie of zombies) {
+        for (const parte of zombie.objeto.children) {
+            partes.push(parte);
+        }
+    }
+
+    const impactos = raycaster.intersectObjects(partes, false);
+
+    if (impactos.length === 0) return 0;
+
+    const parte = impactos[0].object;
+    let objetivo = null;
+
+    for (const zombie of zombies) {
+        if (zombie.objeto.children.includes(parte)) {
+            objetivo = zombie;
+            break;
+        }
+    }
+
+    if (!objetivo) return 0;
+
+    objetivo.vida -= dano;
+
+    if (objetivo.vida <= 0) {
+        eliminarZombie(objetivo);
+    }
+
+    return 1;
+}
+
+
+/* ========================================
+   ACTUALIZAR ZOMBIES
+======================================== */
+
+function actualizarZombies() {
+    const ahora = Date.now();
+
+    for (const zombie of [...zombies]) {
+        const objeto = zombie.objeto;
+        const dx = jugador.position.x - objeto.position.x;
+        const dz = jugador.position.z - objeto.position.z;
+        const distancia = Math.sqrt(dx * dx + dz * dz);
+
+        objeto.lookAt(jugador.position.x, 0, jugador.position.z);
+
+        if (distancia > (zombie.tipo === "jefe20" ? 8 : 2)) {
+            objeto.position.x += dx / distancia * zombie.velocidad;
+            objeto.position.z += dz / distancia * zombie.velocidad;
+        }
+
+        if (zombie.tipo === "jefe" || zombie.tipo === "jefe20") {
+            const porcentaje = Math.max(0, zombie.vida / zombie.vidaMaxima) * 100;
+            vidaBarraJefe.style.width = porcentaje + "%";
+        }
+
+        // Titán Láser rebalanceado: aviso de 1.2 s, ráfagas de 3 disparos,
+        // 20 de daño por impacto y 2 s de descanso entre ráfagas.
+        if (zombie.tipo === "jefe20") {
+            const laser = zombie.laser;
+            const origen = objeto.localToWorld(new THREE.Vector3(0, 3.8, -0.9));
+
+            if (zombie.faseLaser === "espera" && ahora >= zombie.siguienteAtaque) {
+                zombie.disparosRafaga = 3;
+                zombie.faseLaser = "aviso";
+                zombie.finFaseLaser = ahora + 1200;
+                zombie.objetivoLaser = new THREE.Vector3(jugador.position.x, 1.0, jugador.position.z);
+                mostrarMensaje("⚠️ ¡TITÁN APUNTANDO! ¡MUÉVETE!");
+            }
+
+            if (zombie.faseLaser === "entreDisparos" && ahora >= zombie.siguienteAtaque) {
+                zombie.faseLaser = "aviso";
+                zombie.finFaseLaser = ahora + 1200;
+                zombie.objetivoLaser = new THREE.Vector3(jugador.position.x, 1.0, jugador.position.z);
+                mostrarMensaje("⚠️ ¡CUIDADO CON EL LÁSER!");
+            }
+
+            if (zombie.faseLaser === "aviso") {
+                // Línea naranja tenue: indica la dirección del próximo disparo.
+                if (laser && zombie.objetivoLaser) {
+                    laser.material.color.setHex(0xff8800);
+                    laser.material.opacity = 0.45;
+                    laser.geometry.setFromPoints([origen, zombie.objetivoLaser]);
+                    laser.visible = true;
+                }
+
+                if (ahora >= zombie.finFaseLaser) {
+                    zombie.faseLaser = "rayo";
+                    zombie.finFaseLaser = ahora + 160;
+
+                    // Solo golpea si el jugador sigue cerca del punto señalado al terminar el aviso.
+                    const tx = jugador.position.x - zombie.objetivoLaser.x;
+                    const tz = jugador.position.z - zombie.objetivoLaser.z;
+                    const distanciaAlPunto = Math.sqrt(tx * tx + tz * tz);
+
+                    if (distanciaAlPunto <= 2.4) {
+                        const danoLaser = Math.round(zombie.dano * (1 - proteccion / 100));
+                        vida = Math.max(0, vida - danoLaser);
+                        actualizarUI();
+                        mostrarMensaje("⚡ ¡EL LÁSER TE GOLPEÓ! -" + danoLaser + " VIDA");
+
+                        if (vida === 0) {
+                            alert("💀 ¡HAS PERDIDO!\n\nOleada: " + oleada + "\nPuntos: " + puntuacion);
+                            location.reload();
+                            return;
+                        }
+                    } else {
+                        mostrarMensaje("💨 ¡ESQUIVASTE EL LÁSER!");
+                    }
+                }
+            } else if (zombie.faseLaser === "rayo") {
+                if (laser && zombie.objetivoLaser) {
+                    laser.material.color.setHex(0xffe600);
+                    laser.material.opacity = 1;
+                    laser.geometry.setFromPoints([origen, zombie.objetivoLaser]);
+                    laser.visible = true;
+                }
+
+                if (ahora >= zombie.finFaseLaser) {
+                    if (laser) laser.visible = false;
+                    zombie.disparosRafaga--;
+                    if (zombie.disparosRafaga > 0) {
+                        // Breve intervalo entre los 3 disparos de la ráfaga.
+                        zombie.faseLaser = "entreDisparos";
+                        zombie.siguienteAtaque = ahora + 350;
+                    } else {
+                        // Descanso de 2 segundos después de completar la ráfaga.
+                        zombie.faseLaser = "espera";
+                        zombie.siguienteAtaque = ahora + 2000;
+                    }
+                }
+            } else if (laser) {
+                laser.visible = false;
+            }
+
+            continue;
+        }
+
+        if (distancia <= 2 && ahora - zombie.ultimoAtaque > 1000) {
+            let dano = zombie.dano;
+            dano *= 1 - proteccion / 100;
+            vida -= Math.round(dano);
+            if (vida < 0) vida = 0;
+            zombie.ultimoAtaque = ahora;
+            actualizarUI();
+
+            if (vida === 0) {
+                alert("💀 ¡HAS PERDIDO!\n\nOleada: " + oleada + "\nPuntos: " + puntuacion);
+                location.reload();
+                return;
+            }
+        }
+    }
+}
+
+/* ========================================
+   JOYSTICK MÓVIL
+======================================== */
+
+const joystickBase = document.getElementById("joystickBase");
+const joystick = document.getElementById("joystick");
+
+let joystickX = 0;
+let joystickY = 0;
+let joystickActivo = false;
+let joystickPointerId = null;
+
+function actualizarJoystick(x, y) {
+    const rect = joystickBase.getBoundingClientRect();
+
+    const centroX = rect.left + rect.width / 2;
+    const centroY = rect.top + rect.height / 2;
+
+    let dx = x - centroX;
+    let dy = y - centroY;
+
+    const max = 45;
+
+    const distancia = Math.sqrt(dx * dx + dy * dy);
+
+    if (distancia > max) {
+        dx = dx / distancia * max;
+        dy = dy / distancia * max;
+    }
+
+    joystick.style.left = (35 + dx) + "px";
+    joystick.style.top = (35 + dy) + "px";
+
+    joystickX = dx / max;
+    joystickY = dy / max;
+}
+
+joystickBase.addEventListener("pointerdown", evento => {
+    joystickActivo = true;
+    joystickPointerId = evento.pointerId;
+
+    joystickBase.setPointerCapture(evento.pointerId);
+
+    actualizarJoystick(
+        evento.clientX,
+        evento.clientY
+    );
+});
+
+joystickBase.addEventListener("pointermove", evento => {
+    if (
+        !joystickActivo ||
+        evento.pointerId !== joystickPointerId
+    ) return;
+
+    actualizarJoystick(
+        evento.clientX,
+        evento.clientY
+    );
+});
+
+function soltarJoystick() {
+    joystickActivo = false;
+    joystickX = 0;
+    joystickY = 0;
+
+    joystick.style.left = "35px";
+    joystick.style.top = "35px";
+}
+
+joystickBase.addEventListener("pointerup", soltarJoystick);
+joystickBase.addEventListener("pointercancel", soltarJoystick);
+
+
+/* ========================================
+   MIRAR CON EL DEDO
+======================================== */
+
+let mirarActivo = false;
+let mirarX = 0;
+let mirarY = 0;
+
+document.addEventListener("pointerdown", evento => {
+    if (evento.pointerType !== "touch") return;
+
+    if (
+        evento.target.closest("#joystickBase") ||
+        evento.target.closest(".botonMovil") ||
+        evento.target.closest("#tienda") ||
+        evento.target.closest("#tiendaJefe")
+    ) {
+        return;
+    }
+
+    mirarActivo = true;
+    mirarX = evento.clientX;
+    mirarY = evento.clientY;
+});
+
+document.addEventListener("pointermove", evento => {
+    if (
+        !mirarActivo ||
+        evento.pointerType !== "touch"
+    ) return;
+
+    const dx = evento.clientX - mirarX;
+    const dy = evento.clientY - mirarY;
+
+    const sensibilidad = 0.006;
+
+    yaw -= dx * sensibilidad;
+    pitch -= dy * sensibilidad;
+
+    limitarVista();
+
+    jugador.rotation.y = yaw;
+    camara.rotation.x = pitch;
+
+    mirarX = evento.clientX;
+    mirarY = evento.clientY;
+});
+
+document.addEventListener("pointerup", evento => {
+    if (evento.pointerType === "touch") {
+        mirarActivo = false;
+    }
+});
+
+
+/* ========================================
+   BOTONES MÓVILES
+======================================== */
+
+document.getElementById("botonDisparo")
+    .addEventListener("pointerdown", evento => {
+        evento.preventDefault();
+        disparar();
+    });
+
+document.getElementById("botonRecargar")
+    .addEventListener("pointerdown", evento => {
+        evento.preventDefault();
+        recargar();
+    });
+
+document.getElementById("botonTienda")
+    .addEventListener("pointerdown", evento => {
+        evento.preventDefault();
+
+        if (juegoEnPausa) {
+            if (oleada % 10 === 0) {
+                abrirTiendaJefe();
+            } else {
+                abrirTienda();
+            }
+        }
+    });
+
+
+/* ========================================
+   ANIMACIÓN
+======================================== */
+
+function animar() {
+    requestAnimationFrame(animar);
+
+    if (!juegoEnPausa) {
+        actualizarJugador();
+        actualizarZombies();
+    }
+
+    renderizador.render(
+        escena,
+        camara
+    );
+}
+
+
+/* ========================================
+   INICIO
+======================================== */
+
+actualizarUI();
+crearOleada();
+animar();
+
+
+/* ========================================
+   REDIMENSIONAR
+======================================== */
+
+window.addEventListener("resize", () => {
+    camara.aspect =
+        window.innerWidth /
+        window.innerHeight;
+
+    camara.updateProjectionMatrix();
+
+    renderizador.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+});
+</script>
+
+</body>
+</html>
